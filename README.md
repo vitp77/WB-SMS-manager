@@ -4,3 +4,5 @@
 В теле демо виртуального устройства telegram2wb-logic.js нужно объявить глобальными переменные chatId и msgTopic:
 global.__proto__.chatId = "ХХХХХХХХХ";
 global.__proto__.msgTopic = "{}/{}".format(deviceName, bot.mqttMsg);
+
+![изображение](./doc/SMSManager.png)
