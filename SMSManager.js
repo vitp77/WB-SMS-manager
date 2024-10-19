@@ -63,11 +63,25 @@
     if (textSMS.length == 0) {return;}
     if (getDevice("sms_manager").isControlExists("SMS_{}_04_btn".format(idSMS))) {return;}
     log.debug("addContols: {}".format(idSMS));
-    updateControl("SMS_{}_00_separator".format(idSMS),   "-----------------------------------------------------------------", "text", "", true);
-    updateControl("SMS_{}_01_timeStamp".format(idSMS),   "Дата",    "text",       timeStamp, true);
-    updateControl("SMS_{}_02_phoneNumber".format(idSMS), "Номер",   "text",       phoneNumber, true);
-    updateControl("SMS_{}_03_textSMS".format(idSMS),     "Текст",   "text",       textSMS, true);
-    updateControl("SMS_{}_04_btn".format(idSMS),         "Удалить", "pushbutton", false, false);
+    // Секунды
+    var order = parseInt(idSMS.slice(-4, -2))
+    // Минуты
+    order += parseInt(idSMS.slice(-6, -4)) * 60
+    // Часы
+    order += parseInt(idSMS.slice(-8, -6)) * 3600
+    // Дни
+    order += parseInt(idSMS.slice(-11, -9)) * 24 * 3600
+    // Месяцы
+    order += parseInt(idSMS.slice(-13, -11)) * 31 * 24 * 3600
+    // Год (1 разряд)
+    order += parseInt(idSMS.slice(-14, -13)) * 12 * 31 * 24 * 3600
+    // Очередность контролов в пределах SMS
+    order *= 10 
+    updateControl("SMS_{}_00_separator".format(idSMS),   "-----------------------------------------------------------------", "text", "", true, order);
+    updateControl("SMS_{}_01_timeStamp".format(idSMS),   "Дата",    "text",       timeStamp, true, order + 1);
+    updateControl("SMS_{}_02_phoneNumber".format(idSMS), "Номер",   "text",       phoneNumber, true, order + 2);
+    updateControl("SMS_{}_03_textSMS".format(idSMS),     "Текст",   "text",       textSMS, true, order + 3);
+    updateControl("SMS_{}_04_btn".format(idSMS),         "Удалить", "pushbutton", false, false, order + 4);
     // Обновление максимального штампа времени, если новый штамп больше максимального - сообщение новое
     if(dev["sms_manager/resended_SMS_timeStamp"] == null || dev["sms_manager/resended_SMS_timeStamp"] < timeStamp) {
       dev["sms_manager/resended_SMS_timeStamp"] = timeStamp
@@ -77,9 +91,9 @@
     }
   }
   
-  function updateControl(controlName, title, type, value, readonly) {
+  function updateControl(controlName, title, type, value, readonly, order) {
     if (!getDevice("sms_manager").isControlExists(controlName)) {
-      getDevice("sms_manager").addControl(controlName, { title: title, type: type, value: value, readonly: readonly });
+      getDevice("sms_manager").addControl(controlName, { title: title, type: type, value: value, readonly: readonly, order: order});
       if(type == "pushbutton") {
         defineRule("click_{}".format(controlName), {
             whenChanged: "sms_manager/{}".format(controlName),
